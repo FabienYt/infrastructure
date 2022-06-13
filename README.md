@@ -4,6 +4,8 @@ This repo contains the code used to deploy and managing my various VM on VMware 
 
 # Deploy instructions:
 
+`make check_update`
+
 `make configure`
 
 `make deploy`

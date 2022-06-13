@@ -1,5 +1,8 @@
 ### Tasks
 
+check_update:
+	docker run -it -e DOCKER_TASK="check_update" -v ${CURDIR}/ansible:/ansible:rw -v ${CURDIR}/data:/data:ro ansible_infrastructure
+
 configure:
 	docker run -it -e DOCKER_TASK="configure" -v ${CURDIR}/ansible:/ansible:rw -v ${CURDIR}/data:/data:ro ansible_infrastructure
 

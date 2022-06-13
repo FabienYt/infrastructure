@@ -1,0 +1,20 @@
+---
+- name: Check packages to update
+  hosts: vm-esxi-applications:vm-esxi-network
+  become: true
+  tasks:
+    - name: Update repositories cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Check for upgradeable
+      ansible.builtin.command: apt list --upgradable
+      args:
+        removes: /usr/bin/apt
+      register: packages
+      changed_when: false
+
+    - name: Show packages to upgrade
+      ansible.builtin.debug:
+        msg: "{{ packages.stdout_lines[1:] }}"
