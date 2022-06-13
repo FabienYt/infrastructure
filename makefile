@@ -1,5 +1,4 @@
 ### Tasks
-
 check_update:
 	docker run -it -e DOCKER_TASK="check_update" -v ${CURDIR}/ansible:/ansible:rw -v ${CURDIR}/data:/data:ro ansible_infrastructure
 
@@ -11,6 +10,15 @@ deploy:
 
 preseed:
 	docker run --privileged -it -e DOCKER_TASK="preseed" -v ${CURDIR}/ansible:/ansible:rw -v ${CURDIR}/data:/data:rw ansible_infrastructure
+
+update:
+	docker run -it -e DOCKER_TASK="update" -v ${CURDIR}/ansible:/ansible:rw -v ${CURDIR}/data:/data:ro ansible_infrastructure
+
+update_vm_applications:
+	docker run -it -e DOCKER_TASK="update" -e DOCKER_LIMIT="vm-esxi-applications" -v ${CURDIR}/ansible:/ansible:rw -v ${CURDIR}/data:/data:ro ansible_infrastructure
+
+update_vm_network:
+	docker run -it -e DOCKER_TASK="update" -e DOCKER_LIMIT="vm-esxi-network" -v ${CURDIR}/ansible:/ansible:rw -v ${CURDIR}/data:/data:ro ansible_infrastructure
 
 ### Setup
 build:

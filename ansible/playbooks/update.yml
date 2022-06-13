@@ -1,0 +1,30 @@
+---
+- name: Check packages to update
+  hosts: vm-esxi-applications:vm-esxi-network
+  become: true
+  tasks:
+    - name: Update packages
+      ansible.builtin.apt:
+        autoclean: true
+        autoremove: true
+        update_cache: true
+        purge: true
+        cache_valid_time: 3600
+        upgrade: dist
+
+    - name: Check if a reboot is needed for Debian and Ubuntu boxes
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+        get_checksum: false
+      register: reboot_required_file
+
+    - name: Reboot the Debian server
+      ansible.builtin.reboot:
+        msg: Reboot initiated by Ansible due to kernel updates
+        connect_timeout: 5
+      when: reboot_required_file.stat.exists
+
+    - name: Remove useless packages from the cache and dependencies that are no longer required
+      ansible.builtin.apt:
+        autoclean: true
+        autoremove: true

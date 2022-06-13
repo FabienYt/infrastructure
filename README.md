@@ -12,6 +12,12 @@ This repo contains the code used to deploy and managing my various VM on VMware 
 
 `make preseed`
 
+`make update`
+
+`make update_vm_applications`
+
+`make update_vm_network`
+
 # Setup instructions:
 
 `make build`
