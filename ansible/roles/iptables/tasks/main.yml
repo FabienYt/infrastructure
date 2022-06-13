@@ -1,0 +1,17 @@
+---
+- name: Write iptables rules file
+  ansible.builtin.template:
+    src: iptables.rules.j2
+    dest: /etc/iptables.ansible.rules
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restore iptables rules
+
+- name: Add iptables rules permanent
+  ansible.builtin.copy:
+    src: iptables
+    dest: /etc/network/if-pre-up.d/iptables
+    owner: root
+    group: root
+    mode: "0744"

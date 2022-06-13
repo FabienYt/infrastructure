@@ -1,0 +1,84 @@
+---
+# Config
+user_ssh_password: "{{ vm_esxi_network_root_password }}"
+healthchecks_io_uuid: !vault |
+  $ANSIBLE_VAULT;1.1;AES256
+  61386164616539376466643463663835636563363361663761396433663166623938613239333137
+  6662633731323938616136643733363438656439383931310a336632306237623162306638353865
+  63373133653965373930386463336565663762333864646566363831313065303664363835653362
+  3937313764316332610a626261393138666363393861306334333133363062326161333937323336
+  65646533303334643339656131623134633962313839656133646439353934626632336534313137
+  3332376333353766636439303139373461613033616433303361
+
+# Docker
+docker_compose_deploy:
+  - name: adguard
+    templates:
+      - src: "{{ inventory_dir }}/group_vars/docker/templates/adguardhome.yaml"
+        dest: __conf/AdGuardHome.yaml
+        mode: "0644"
+    containers:
+      - service_name: adguard
+        image: adguard/adguardhome:v0.107.7
+        healthcheck:
+          test: /bin/netstat -pant | /bin/grep 53
+        labels_traefik:
+          name: adguard
+          port: "3000"
+          subdomains: adguard-primary
+        networks:
+          - "{{ docker_compose_network_proxy_name }}"
+          - adguard
+        ports:
+          - 53:53/tcp
+          - 53:53/udp
+          - 3000:3000/tcp
+        user: "{{ docker_compose_uid }}:{{ docker_compose_gid }}"
+        volumes:
+          - __appdata__/__conf:/opt/adguardhome/conf
+          - __appdata__/__work:/opt/adguardhome/work
+  - name: traefik
+    templates:
+      - src: "{{ inventory_dir }}/group_vars/docker/templates/traefik_dynamic_configuration.yml"
+        dest: dynamic_configuration.yml
+      - src: "{{ inventory_dir }}/group_vars/docker/templates/traefik.yml"
+        dest: traefik.yml
+    containers:
+      - service_name: traefik
+        image: traefik:2.7.0
+        healthcheck:
+          test: traefik healthcheck --ping
+        depends_on:
+          - name: traefik-docker-socket-proxy
+            condition: service_healthy
+        environment:
+          - OVH_APPLICATION_KEY={{ acme_ovh_application_key }}
+          - OVH_APPLICATION_SECRET={{ acme_ovh_application_secret }}
+          - OVH_CONSUMER_KEY={{ acme_ovh_consumer_key }}
+          - OVH_ENDPOINT={{ acme_ovh_endpoint }}
+        networks:
+          - "{{ docker_compose_network_proxy_name }}"
+          - traefik-socket-proxy
+        ports:
+          - 80:80/tcp
+          - 443:443/tcp
+          - 443:443/udp
+        user: "{{ docker_compose_uid }}:{{ docker_compose_gid }}"
+        volumes:
+          - __appdata__/acme:/etc/traefik/acme
+          - __appdata__/dynamic_configuration.yml:/etc/traefik/config/dynamic_configuration.yml:ro
+          - __appdata__/traefik.yml:/etc/traefik/traefik.yml:ro
+      - service_name: traefik-docker-socket-proxy
+        image: ghcr.io/tecnativa/docker-socket-proxy:0.1.1
+        healthcheck:
+          test: /bin/netstat -pant | /bin/grep 2375
+        environment:
+          - CONTAINERS=1
+          - VERSION=1
+        networks:
+          - traefik-socket-proxy
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+
+# Traefik
+traefik_domain_main: adguard-primary.{{ domain_name }}

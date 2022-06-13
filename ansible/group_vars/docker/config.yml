@@ -1,0 +1,35 @@
+---
+# Ansible
+deploy_iptables: true
+
+# Docker
+docker_daemon_options:
+  icc: false
+  iptables: true
+  live-restore: true
+  no-new-privileges: true
+  userland-proxy: false
+
+docker_users:
+  - "{{ docker_user_name }}"
+
+docker_user_name: dockeruser
+docker_user_uid: 3000
+docker_user_group: "{{ docker_user_name }}"
+docker_user_gid: "{{ docker_user_uid }}"
+
+# Docker-backup
+docker_backup_user: "{{ backup_user_name }}"
+docker_backup_uid: "{{ backup_user_uid }}"
+
+# Docker-compose
+docker_compose_user: "{{ docker_user_name }}"
+docker_compose_uid: "{{ docker_user_uid }}"
+
+# Iptables
+iptables_docker_interface: docker0
+
+# Hardening
+hardening_install_docker: true
+hardening_install_iptables: true
+sysctl_overwrite_net_ipv4_ip_forward: 1

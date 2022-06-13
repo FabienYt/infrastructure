@@ -1,0 +1,39 @@
+---
+- name: Delete old ISO image
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_fileglob:
+    - /data/iso/*.iso
+
+- name: Create preseed tree view
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0744"
+  with_items:
+    - "{{ preseed_path_build }}"
+    - "{{ preseed_path_build }}/config"
+    - "{{ preseed_path_build }}/iso"
+
+- name: Copy preseed script
+  ansible.builtin.copy:
+    src: preseed_creator.sh
+    dest: "{{ preseed_path_build }}"
+    mode: "0744"
+
+- name: Create preseed.cfg file for each environment
+  ansible.builtin.template:
+    src: preseed.cfg.j2
+    dest: "{{ preseed_path_build }}/config/{{ item.name }}.cfg"
+    mode: "0744"
+  with_items: "{{ preseed_environment }}"
+  no_log: true
+
+- name: Generate preseeded ISO image
+  ansible.builtin.command: ./preseed_creator.sh -x -p {{ preseed_path_build }}/config/{{ item.name }}.cfg -o /data/iso/{{ item.name }}.iso
+  args:
+    chdir: "{{ preseed_path_build }}"
+    removes: "{{ preseed_path_build }}/config/{{ item.name }}.cfg"
+  with_items: "{{ preseed_environment }}"
+  no_log: true

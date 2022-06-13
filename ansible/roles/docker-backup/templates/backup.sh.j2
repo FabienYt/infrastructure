@@ -1,0 +1,18 @@
+#!/bin/bash
+set -eu
+
+now=$(date '+%Y%m%d%H%M%S')
+
+rsync -a --exclude '__*/' --chown={{ docker_backup_user }}:{{ docker_backup_group }} --no-compress {{ docker_backup_docker_path }}/ {{ docker_backup_backups_files_path }}/${now}/
+
+find {{ docker_backup_backups_files_path }}/* -maxdepth 0 -ctime +{{ docker_backup_retention_days }} -type d -delete
+
+{% if docker_backup_databases_postgres|length > 0 %}
+{% for database in docker_backup_databases_postgres %}
+docker exec -t {{ database.container_name }} pg_dump {{ database.db_name | default(database.container_name | replace("-postgres", "")) }} -U {{ database.db_user | default(database.container_name | replace("-postgres", "")) }} > {{ docker_backup_backups_databases_path }}/{{ database.container_name }}/${now}_{{ database.container_name }}.sql
+{% endfor %}
+
+chown -R {{ docker_backup_user }}:{{ docker_backup_group }} {{ docker_backup_backups_databases_path }}
+
+find {{ docker_backup_backups_databases_path }}/* -ctime +{{ docker_backup_retention_days }} -type f -delete
+{% endif %}

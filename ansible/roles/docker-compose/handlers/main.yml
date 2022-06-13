@@ -1,0 +1,7 @@
+---
+- name: Restart docker compose
+  ansible.builtin.command: "{{ item }}"
+  args:
+    chdir: "{{ docker_compose_group_path }}"
+    removes: "{{ docker_compose_group_path }}/docker-compose.yml"
+  loop: "{{ docker_compose_update_command }}"

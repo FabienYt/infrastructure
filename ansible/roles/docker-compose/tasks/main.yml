@@ -1,0 +1,19 @@
+---
+- name: Create base folder
+  ansible.builtin.file:
+    path: "{{ docker_compose_base_path }}"
+    state: directory
+    owner: "{{ docker_compose_user }}"
+    group: "{{ docker_compose_group }}"
+    mode: "0700"
+
+- name: Create docker network for proxy
+  community.general.docker_network:
+    name: "{{ docker_compose_network_proxy_name }}"
+    internal: true
+  when: docker_compose_network_proxy_create | bool
+
+- name: Deploy docker-compose
+  include_tasks: deploy.yml
+  with_items: "{{ docker_compose_deploy }}"
+  no_log: true

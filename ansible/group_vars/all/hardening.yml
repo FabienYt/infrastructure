@@ -1,0 +1,110 @@
+---
+# OS
+os_unused_filesystems:
+  # Obscure networking protocols
+  - dccp
+  - sctp
+  - rds
+  - tipc
+  - hdlc
+  - ax25
+  - netrom
+  - x25
+  - rose
+  - decnet
+  - econet
+  - af_802154
+  - ipx
+  - appletalk
+  - psnap
+  - p8023
+  - p8022
+  - can
+  - atm
+  # Network filesystems
+  - cifs
+  - nfs
+  - nfsv3
+  - nfsv4
+  - ksmbd
+  - gfs2
+  # Rare filesystems
+  - cramfs
+  - freevxfs
+  - jffs2
+  - hfs
+  - hfsplus
+  - squashfs
+  - udf
+  - vfat
+  # Driver
+  - vivid
+  # Others
+  - bluetooth
+  - btusb
+  - firewire-core
+  - uvcvideo
+  - thunderbolt
+
+sysctl_overwrite:
+  dev.tty.ldisc_autoload: 0
+  fs.inotify.max_queued_events: 1048576
+  fs.inotify.max_user_instances: 1048576
+  fs.inotify.max_user_watches: 1048576
+  fs.protected_fifos: 1
+  fs.protected_hardlinks: 1
+  fs.protected_regular: 2
+  fs.protected_symlinks: 1
+  kernel.core_pattern: "|/bin/false"
+  kernel.dmesg_restrict: 1
+  kernel.kexec_load_disabled: 1
+  kernel.kptr_restrict: 2
+  kernel.perf_event_paranoid: 3
+  kernel.sysrq: 0
+  kernel.unprivileged_bpf_disabled: 1
+  kernel.unprivileged_userns_clone: 0
+  kernel.yama.ptrace_scope: 3
+  net.core.bpf_jit_harden: 2
+  net.core.rmem_max: 2500000
+  net.ipv4.conf.all.accept_redirects: 0
+  net.ipv4.conf.all.accept_source_route: 0
+  net.ipv4.conf.all.rp_filter: 1
+  net.ipv4.conf.all.secure_redirects: 0
+  net.ipv4.conf.all.send_redirects: 0
+  net.ipv4.conf.default.accept_redirects: 0
+  net.ipv4.conf.default.accept_source_route: 0
+  net.ipv4.conf.default.rp_filter: 1
+  net.ipv4.conf.default.secure_redirects: 0
+  net.ipv4.conf.default.send_redirects: 0
+  net.ipv4.icmp_echo_ignore_all: 1
+  net.ipv4.ip_forward: "{{ sysctl_overwrite_net_ipv4_ip_forward | default(0) }}"
+  net.ipv4.tcp_dsack: 0
+  net.ipv4.tcp_fack: 0
+  net.ipv4.tcp_rfc1337: 1
+  net.ipv4.tcp_sack: 0
+  net.ipv4.tcp_syncookies: 1
+  net.ipv4.tcp_timestamps: 0
+  net.ipv6.conf.all.accept_ra: 0
+  net.ipv6.conf.all.accept_redirects: 0
+  net.ipv6.conf.all.accept_source_route: 0
+  net.ipv6.conf.all.disable_ipv6: 1
+  net.ipv6.conf.all.use_tempaddr: 2
+  net.ipv6.conf.default.accept_ra: 0
+  net.ipv6.conf.default.accept_redirects: 0
+  net.ipv6.conf.default.accept_source_route: 0
+  net.ipv6.conf.default.autoconf: 0
+  net.ipv6.conf.default.disable_ipv6: 1
+  net.ipv6.conf.default.use_tempaddr: 2
+  net.ipv6.conf.lo.disable_ipv6: 1
+  vm.mmap_rnd_bits: 32
+  vm.mmap_rnd_compat_bits: 16
+  vm.swappiness: 1
+  vm.unprivileged_userfaultfd: 0
+
+ufw_manage_defaults: false
+
+# SSH
+network_ipv6_enable: false
+
+ssh_permit_root_login: prohibit-password
+ssh_allow_users: "{{ ansible_user }} {{ backup_user_name }}"

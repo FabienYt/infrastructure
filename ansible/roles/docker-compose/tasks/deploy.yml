@@ -1,0 +1,71 @@
+---
+- name: Setting vars
+  set_fact:
+    docker_compose_containers: "{{ item.containers | default([]) }}"
+    docker_compose_containers_group: "{{ item.name }}"
+    docker_compose_files: "{{ item.files | default([]) }}"
+    docker_compose_templates: "{{ item.templates | default([]) }}"
+    docker_compose_volumes_defined: []
+
+- name: Setting vars
+  set_fact:
+    docker_compose_volumes_defined: "{{ docker_compose_volumes_defined
+      | combine({(volume.path | replace('__appdata__', docker_compose_appdata_path)): volume.chmod})
+      }}"
+  loop: "{{ item.volumes }}"
+  loop_control:
+    loop_var: volume
+  when: item.volumes is defined and item.volumes|length > 0
+
+- name: Create volumes
+  ansible.builtin.file:
+    path: "{{ volume }}"
+    state: directory
+    owner: "{{ docker_compose_user }}"
+    group: "{{ docker_compose_group }}"
+    mode: "{{ docker_compose_volumes_defined[volume] | default('0700') }}"
+  loop: "{{ docker_compose_volumes }}"
+  loop_control:
+    loop_var: volume
+
+- name: Copy files
+  ansible.builtin.copy:
+    src: "{{ file.src }}"
+    dest: "{{ docker_compose_appdata_path }}/{{ file.dest }}"
+    owner: "{{ docker_compose_user }}"
+    group: "{{ docker_compose_group }}"
+    mode: "{{ file.mode | default('0600') }}"
+    force: "{{ file.force | default('true') }}"
+  loop: "{{ docker_compose_files }}"
+  loop_control:
+    loop_var: file
+  when: docker_compose_files|length > 0
+  notify: Restart docker compose
+
+- name: Write template files
+  ansible.builtin.template:
+    src: "{{ template.src }}.j2"
+    dest: "{{ docker_compose_appdata_path }}/{{ template.dest }}"
+    owner: "{{ docker_compose_user }}"
+    group: "{{ docker_compose_group }}"
+    mode: "{{ template.mode | default('0600') }}"
+    force: "{{ template.force | default('true') }}"
+  loop: "{{ docker_compose_templates }}"
+  loop_control:
+    loop_var: template
+  when: docker_compose_templates|length > 0
+  notify: Restart docker compose
+
+- name: Write docker compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ docker_compose_group_path }}/docker-compose.yml"
+    owner: "{{ docker_compose_user }}"
+    group: "{{ docker_compose_group }}"
+    mode: "0600"
+    validate: "{{ docker_compose_command }} -f %s config"
+  when: docker_compose_containers|length > 0
+  notify: Restart docker compose
+
+- name: Force all notified handlers
+  meta: flush_handlers

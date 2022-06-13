@@ -1,0 +1,2 @@
+---
+user_ssh_password: "{{ main_server_root_password }}"

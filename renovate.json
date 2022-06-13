@@ -1,0 +1,6 @@
+{
+  "enabledManagers": ["ansible", "ansible-galaxy", "docker-compose", "dockerfile"],
+  "ansible": {
+    "fileMatch": ["^ansible/host_vars/.*\\.ya?ml$"]
+  }
+}

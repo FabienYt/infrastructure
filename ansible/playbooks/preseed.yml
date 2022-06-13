@@ -1,0 +1,7 @@
+---
+- name: Preseed
+  connection: local
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - preseed

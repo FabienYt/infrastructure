@@ -1,0 +1,6 @@
+### Editor ###
+/.vscode
+
+### Ansible ###
+ansible/galaxy/
+ansible/.vault_password_file.txt

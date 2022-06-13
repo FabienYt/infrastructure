@@ -1,0 +1,32 @@
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+:FILTERS - [0:0]
+{% if iptables_docker_interface is defined %}
+:DOCKER-USER - [0:0]
+{% endif %}
+
+
+-F INPUT
+{% if iptables_docker_interface is defined %}
+-F DOCKER-USER
+{% endif %}
+-F FILTERS
+
+-A INPUT -i lo -j ACCEPT
+-A INPUT -j FILTERS
+
+{% if iptables_docker_interface is defined %}
+-A DOCKER-USER -i {{ iptables_docker_interface }} -j FILTERS
+{% endif %}
+
+-A FILTERS -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+{% for port in iptables_ports %}
+-A FILTERS -m state --state NEW -m {{ port.protocol }} -p {{ port.protocol }} --dport {{ port.port }} -j ACCEPT
+{% endfor %}
+
+-A FILTERS -j REJECT --reject-with icmp-host-prohibited
+
+COMMIT

@@ -1,0 +1,259 @@
+---
+# Config
+user_ssh_password: "{{ vm_esxi_applications_root_password }}"
+healthchecks_io_uuid: !vault |
+  $ANSIBLE_VAULT;1.1;AES256
+  38373263663934663037356636636136366161323532323435356130643835633964666230363933
+  3861313936333163656332353762373865313636636232620a303762316566326266303836376663
+  35316231653233316530323931636630333636396135363235373230613465313438313332306162
+  3831653266303461620a323964646162653664663135663166346162306662393564363361636134
+  61386466373763366432316132633330616263306564366535323731636638383435336262326634
+  3363663937376462356365663732653664333334656133333737
+
+# Docker
+docker_compose_deploy:
+  - name: ferdi
+    containers:
+      - service_name: ferdi
+        image: getferdi/ferdi-server:1.3.2
+        depends_on:
+          - name: ferdi-postgres
+            condition: service_healthy
+        environment:
+          - NODE_ENV=development
+          - APP_URL=https://ferdi.{{ domain_name }}
+          - DB_CONNECTION=pg
+          - DB_HOST=ferdi-postgres
+          - DB_PORT=5432
+          - DB_USER=ferdi
+          - DB_PASSWORD={{ ferdi_db_password }}
+          - DB_DATABASE=ferdi
+          - DB_SSL=false
+          - MAIL_CONNECTION=smtp
+          - SMTP_HOST={{ ovh_smtp }}
+          - SMTP_PORT={{ ovh_port }}
+          - MAIL_SSL=true
+          - MAIL_USERNAME={{ ovh_email }}
+          - MAIL_PASSWORD={{ ovh_email_password }}
+          - MAIL_SENDER={{ ovh_email }}
+          - IS_CREATION_ENABLED=true
+          - IS_DASHBOARD_ENABLED=true
+          - IS_REGISTRATION_ENABLED=false
+          - CONNECT_WITH_FRANZ=false
+          - DATA_DIR=/data
+          - PUID={{ docker_compose_uid }}
+          - PGID={{ docker_compose_gid }}
+        labels_traefik:
+          name: ferdi
+          port: "3333"
+        networks:
+          - "{{ docker_compose_network_proxy_name }}"
+          - ferdi
+        volumes:
+          - __appdata__/data:/data
+          - __appdata__/recipes:/app/recipes
+      - service_name: ferdi-postgres
+        image: postgres:14.3-bullseye
+        environment:
+          - POSTGRES_DB=ferdi
+          - POSTGRES_USER=ferdi
+          - POSTGRES_PASSWORD={{ ferdi_db_password }}
+        healthcheck:
+          test: "['CMD', 'pg_isready', '-U', 'ferdi']"
+        networks:
+          - ferdi
+        user: "{{ docker_compose_uid }}:{{ docker_compose_gid }}"
+        volumes:
+          - __appdata__/__postgres:/var/lib/postgresql/data
+  - name: miniflux
+    # files:
+    #   - src: "/data/files/miniflux-postgres.sql"
+    #     dest: miniflux-postgres.sql
+    containers:
+      - service_name: miniflux
+        image: ghcr.io/miniflux/miniflux:2.0.37
+        healthcheck:
+          test: "['CMD', '/usr/bin/miniflux', '-healthcheck', 'auto']"
+        depends_on:
+          - name: miniflux-postgres
+            condition: service_healthy
+        environment:
+          - BASE_URL=https://miniflux.{{ domain_name }}
+          - DATABASE_URL=postgresql://miniflux:{{ miniflux_db_password }}@miniflux-postgres:5432/miniflux?sslmode=disable
+          - RUN_MIGRATIONS=1
+          - CREATE_ADMIN=1
+          - ADMIN_USERNAME={{ miniflux_username }}
+          - ADMIN_PASSWORD={{ miniflux_password }}
+          - POLLING_PARSING_ERROR_LIMIT=0
+          - PROXY_IMAGES=all
+        labels_traefik:
+          name: miniflux
+          port: "8080"
+        networks:
+          - "{{ docker_compose_network_proxy_name }}"
+          - miniflux
+      - service_name: miniflux-postgres
+        image: postgres:14.3-bullseye
+        environment:
+          - POSTGRES_DB=miniflux
+          - POSTGRES_USER=miniflux
+          - POSTGRES_PASSWORD={{ miniflux_db_password }}
+        healthcheck:
+          test: "['CMD', 'pg_isready', '-U', 'miniflux']"
+        networks:
+          - miniflux
+        user: "{{ docker_compose_uid }}:{{ docker_compose_gid }}"
+        volumes:
+          - __appdata__/__postgres:/var/lib/postgresql/data
+          # - __appdata__/miniflux-postgres.sql:/docker-entrypoint-initdb.d/miniflux-postgres.sql
+  - name: tandoor
+    volumes:
+      - path: __appdata__/mediafiles
+        chmod: "0755"
+    containers:
+      - service_name: tandoor
+        image: vabene1111/recipes:1.2.7
+        healthcheck:
+          test: /bin/netstat -pant | /bin/grep 8080
+        depends_on:
+          - name: tandoor-postgres
+            condition: service_healthy
+        environment:
+          - DB_ENGINE=django.db.backends.postgresql
+          - POSTGRES_HOST=tandoor-postgres
+          - POSTGRES_PORT=5432
+          - POSTGRES_DB=tandoor
+          - POSTGRES_USER=tandoor
+          - POSTGRES_PASSWORD={{ tandoor_db_password }}
+          - ACCOUNT_EMAIL_SUBJECT_PREFIX="[Recettes] "
+          - DEFAULT_FROM_EMAIL={{ ovh_email }}
+          - EMAIL_HOST={{ ovh_smtp }}
+          - EMAIL_PORT={{ ovh_port }}
+          - EMAIL_HOST_USER={{ ovh_email }}
+          - EMAIL_HOST_PASSWORD={{ ovh_email_password }}
+          - EMAIL_USE_SSL=1
+          - SECRET_KEY={{ tandoor_secret_key }}
+          - SESSION_COOKIE_DOMAIN=recettes.{{ domain_name }}
+          - TIMEZONE={{ docker_timezone }}
+        labels_traefik:
+          name: tandoor
+          port: "8080"
+          subdomains: recettes
+        networks:
+          - "{{ docker_compose_network_proxy_name }}"
+          - tandoor
+        user: "{{ docker_compose_uid }}:{{ docker_compose_gid }}"
+        volumes:
+          - __appdata__/mediafiles:/opt/recipes/mediafiles
+          - __appdata__/staticfiles:/opt/recipes/staticfiles
+      - service_name: tandoor-postgres
+        image: postgres:14.3-bullseye
+        environment:
+          - POSTGRES_DB=tandoor
+          - POSTGRES_USER=tandoor
+          - POSTGRES_PASSWORD={{ tandoor_db_password }}
+        healthcheck:
+          test: "['CMD', 'pg_isready', '-U', 'tandoor']"
+        networks:
+          - tandoor
+        user: "{{ docker_compose_uid }}:{{ docker_compose_gid }}"
+        volumes:
+          - __appdata__/__postgres:/var/lib/postgresql/data
+  - name: traefik
+    templates:
+      - src: "{{ inventory_dir }}/group_vars/docker/templates/traefik_dynamic_configuration.yml"
+        dest: dynamic_configuration.yml
+      - src: "{{ inventory_dir }}/group_vars/docker/templates/traefik.yml"
+        dest: traefik.yml
+    containers:
+      - service_name: traefik
+        image: traefik:2.7.0
+        healthcheck:
+          test: traefik healthcheck --ping
+        depends_on:
+          - name: traefik-docker-socket-proxy
+            condition: service_healthy
+        environment:
+          - OVH_APPLICATION_KEY={{ acme_ovh_application_key }}
+          - OVH_APPLICATION_SECRET={{ acme_ovh_application_secret }}
+          - OVH_CONSUMER_KEY={{ acme_ovh_consumer_key }}
+          - OVH_ENDPOINT={{ acme_ovh_endpoint }}
+        networks:
+          - "{{ docker_compose_network_proxy_name }}"
+          - traefik-socket-proxy
+        ports:
+          - 80:80/tcp
+          - 443:443/tcp
+          - 443:443/udp
+        user: "{{ docker_compose_uid }}:{{ docker_compose_gid }}"
+        volumes:
+          - __appdata__/acme:/etc/traefik/acme
+          - __appdata__/dynamic_configuration.yml:/etc/traefik/config/dynamic_configuration.yml:ro
+          - __appdata__/traefik.yml:/etc/traefik/traefik.yml:ro
+      - service_name: traefik-docker-socket-proxy
+        image: ghcr.io/tecnativa/docker-socket-proxy:0.1.1
+        healthcheck:
+          test: /bin/netstat -pant | /bin/grep 2375
+        environment:
+          - CONTAINERS=1
+          - VERSION=1
+        networks:
+          - traefik-socket-proxy
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+  - name: vaultwarden
+    # files:
+    #   - src: "/data/files/vaultwarden-postgres.sql"
+    #     dest: vaultwarden-postgres.sql
+    containers:
+      - service_name: vaultwarden
+        image: vaultwarden/server:1.25.0
+        depends_on:
+          - name: vaultwarden-postgres
+            condition: service_healthy
+        environment:
+          - DISABLE_ADMIN_TOKEN=false
+          - DATABASE_URL=postgresql://vaultwarden:{{ vaultwarden_db_password }}@vaultwarden-postgres:5432/vaultwarden
+          - DOMAIN=https://vaultwarden.{{ domain_name }}
+          - INVITATIONS_ALLOWED=false
+          - SIGNUPS_ALLOWED=false
+          - SMTP_HOST={{ ovh_smtp }}
+          - SMTP_FROM={{ ovh_email }}
+          - SMTP_PORT={{ ovh_port }}
+          - SMTP_SECURITY=starttls
+          - SMTP_USERNAME={{ ovh_email }}
+          - SMTP_PASSWORD={{ ovh_email_password }}
+          - WEBSOCKET_ENABLED=true
+        labels_traefik:
+          name: vaultwarden
+          port: "80"
+        labels:
+          - traefik.http.routers.to-vaultwarden-websocket.rule=Host(`vaultwarden.{{ domain_name }}`) && Path(`/notifications/hub`)
+          - traefik.http.routers.to-vaultwarden-websocket.entrypoints=websecure
+          - traefik.http.routers.to-vaultwarden-websocket.service=vaultwarden-websocket
+          - traefik.http.services.vaultwarden-websocket.loadbalancer.passhostheader=true
+          - traefik.http.services.vaultwarden-websocket.loadbalancer.server.port=3012
+        networks:
+          - "{{ docker_compose_network_proxy_name }}"
+          - vaultwarden
+        user: "{{ docker_compose_uid }}:{{ docker_compose_gid }}"
+        volumes:
+          - __appdata__/data:/data
+      - service_name: vaultwarden-postgres
+        image: postgres:14.3-bullseye
+        environment:
+          - POSTGRES_DB=vaultwarden
+          - POSTGRES_USER=vaultwarden
+          - POSTGRES_PASSWORD={{ vaultwarden_db_password }}
+        healthcheck:
+          test: "['CMD', 'pg_isready', '-U', 'vaultwarden']"
+        networks:
+          - vaultwarden
+        user: "{{ docker_compose_uid }}:{{ docker_compose_gid }}"
+        volumes:
+          - __appdata__/__postgres:/var/lib/postgresql/data
+          # - __appdata__/vaultwarden-postgres.sql:/docker-entrypoint-initdb.d/vaultwarden-postgres.sql
+
+docker_backup_databases_postgres:
+  - container_name: miniflux-postgres
+  - container_name: vaultwarden-postgres

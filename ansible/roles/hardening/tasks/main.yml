@@ -1,0 +1,123 @@
+---
+- name: Add DNS servers
+  ansible.builtin.lineinfile:
+    path: /etc/resolv.conf
+    line: nameserver {{ item }}
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ hardening_dns_servers }}"
+
+- name: Configure APT
+  ansible.builtin.lineinfile:
+    path: /etc/apt/apt.conf
+    line: "{{ item }}"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - APT::Install-Recommends "0";
+    - APT::Install-Suggests "0";
+    - APT::Sandbox::Seccomp "true";
+
+- name: Deploy SSH public key for ansible_user
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user }}"
+    key: "{{ lookup('file', ansible_ssh_private_key_file + '.pub') }}"
+    state: present
+
+- name: Install fail2ban
+  ansible.builtin.package:
+    name: fail2ban
+    state: present
+
+- name: Ensure fail2ban is running and enabled on boot
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true
+
+- name: Add fail2ban SSH jail
+  ansible.builtin.template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.d/ssh.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart fail2ban
+
+- name: Remove unused packages
+  ansible.builtin.package:
+    name:
+      - installation-report
+      - laptop-detect
+      - locales
+      - manpages
+      - nano
+      - sudo
+      - usbutils
+      - vim-tiny
+      - vim-common
+    state: absent
+
+- name: Install ntp
+  ansible.builtin.include_role:
+    name: geerlingguy.ntp
+
+- include_tasks: backup_user.yml
+
+- include_tasks: docker.yml
+  when: hardening_install_docker | bool
+
+- name: Add iptable rules
+  ansible.builtin.include_role:
+    name: iptables
+  when: hardening_install_iptables | bool
+
+- name: Force all notified handlers
+  meta: flush_handlers
+
+- name: Change Machine ID
+  ansible.builtin.copy:
+    content: "b08dfa6083e7567a1921a715000001fb\n"
+    dest: /etc/machine-id
+    owner: root
+    group: root
+    mode: "0444"
+
+- name: Deploy secure ssh-client and ssh-server configurations
+  ansible.builtin.include_role:
+    name: devsec.hardening.ssh_hardening
+
+- name: Deploy numerous security-related configurations, providing all-round base protection
+  ansible.builtin.include_role:
+    name: devsec.hardening.os_hardening
+
+- name: Add cronjob for healthchecks.io
+  ansible.builtin.cron:
+    name: Heartbeat - healthchecks.io
+    job: curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/{{ healthchecks_io_uuid }}
+    user: root
+  when: healthchecks_io_uuid is defined
+
+- name: Remove useless packages from the cache and dependencies that are no longer required
+  ansible.builtin.apt:
+    autoclean: true
+    autoremove: true
+
+- name: Force all notified handlers
+  meta: flush_handlers
+
+- name: Change boot parameters
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: ^GRUB_CMDLINE_LINUX_DEFAULT=
+    line: >-
+      GRUB_CMDLINE_LINUX_DEFAULT="slab_nomerge init_on_alloc=1 init_on_free=1 page_alloc.shuffle=1pti=on
+      vsyscall=none debugfs=off oops=panic module.sig_enforce=1 lockdown=confidentiality
+      mce=0 quiet loglevel=0 intel_iommu=on amd_iommu=on random.trust_cpu=off efi=disable_early_pci_dma"
+  notify:
+    - Regenerate GRUB configuration
+    - Reboot

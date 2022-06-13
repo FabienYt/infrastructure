@@ -1,0 +1,15 @@
+---
+- hosts: vm-esxi-network:vm-esxi-applications
+  any_errors_fatal: true
+  collections:
+    - devsec.hardening
+  roles:
+    - role: hardening
+      tags:
+        - configure
+    - role: docker-compose
+      tags:
+        - deploy
+    - role: docker-backup
+      tags:
+        - deploy

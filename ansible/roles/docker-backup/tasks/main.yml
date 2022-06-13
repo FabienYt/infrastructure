@@ -1,0 +1,45 @@
+---
+- name: Install rsync
+  ansible.builtin.package:
+    name: rsync
+    state: present
+
+- name: Creates base folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ docker_backup_user }}"
+    group: "{{ docker_backup_group }}"
+    mode: "0700"
+  loop:
+    - "{{ docker_backup_backups_databases_path }}"
+    - "{{ docker_backup_backups_files_path }}"
+
+- name: Creates databases folders
+  ansible.builtin.file:
+    path: "{{ docker_backup_backups_databases_path }}/{{ item.container_name }}"
+    state: directory
+    owner: "{{ docker_backup_user }}"
+    group: "{{ docker_backup_group }}"
+    mode: "0700"
+  loop: "{{ docker_backup_databases_postgres }}"
+  when: docker_backup_databases_postgres|length > 0
+
+- name: Writes backup script
+  ansible.builtin.template:
+    src: backup.sh.j2
+    dest: "{{ docker_backup_base_path }}/backup.sh"
+    owner: "{{ docker_backup_user }}"
+    group: "{{ docker_backup_group }}"
+    mode: "0700"
+
+- name: Creates backup crontask
+  ansible.builtin.cron:
+    name: docker - backup
+    job: "{{ docker_backup_base_path }}/backup.sh"
+    minute: "{{ docker_backup_job.minute | default('0') }}"
+    hour: "{{ docker_backup_job.hour | default('*') }}"
+    day: "{{ docker_backup_job.day | default('*') }}"
+    month: "{{ docker_backup_job.month | default('*') }}"
+    weekday: "{{ docker_backup_job.weekday | default('*') }}"
+    user: root

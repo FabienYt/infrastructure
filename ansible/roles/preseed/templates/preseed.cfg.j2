@@ -1,0 +1,80 @@
+#### Contents of the preconfiguration file (for bullseye) - https://www.debian.org/releases/bullseye/example-preseed.txt
+### Localization
+d-i debian-installer/locale string en_US
+d-i keyboard-configuration/xkb-keymap select {{ preseed_xkb_keymap }}
+d-i keyboard-configuration/toggle select No toggling
+
+### Network configuration
+d-i netcfg/disable_autoconfig boolean true
+d-i netcfg/get_ipaddress string {{ item.ipaddress | default(hostvars[item.name].ansible_host) }}
+d-i netcfg/get_netmask string {{ item.netmask | default(preseed_network_netmask) }}
+d-i netcfg/get_gateway string {{ item.gateway | default(preseed_network_gateway) }}
+d-i netcfg/get_nameservers string {{ item.nameservers | default(preseed_network_nameservers) }}
+d-i netcfg/confirm_static boolean true
+d-i netcfg/hostname string {{ item.name }}
+
+### Network console
+d-i mirror/country string manual
+d-i mirror/http/hostname string ftp.fr.debian.org
+d-i mirror/http/directory string /debian
+d-i mirror/http/proxy string
+
+### Account setup
+d-i passwd/make-user boolean false
+d-i passwd/root-password-crypted password {{ item.password | default(preseed_password) | string | password_hash('sha512') }}
+
+### Clock and time zone setup
+d-i clock-setup/utc boolean true
+d-i time/zone string {{ preseed_timezone }}
+d-i clock-setup/ntp boolean true
+d-i clock-setup/ntp-server string {{ preseed_ntp_server }}
+
+### Partitioning
+d-i partman-auto/disk string /dev/sda
+d-i partman-auto/method string lvm
+d-i partman-auto-lvm/guided_size string max
+d-i partman-lvm/device_remove_lvm boolean true
+d-i partman-md/device_remove_md boolean true
+d-i partman-lvm/confirm boolean true
+d-i partman-lvm/confirm_nooverwrite boolean true
+d-i partman-auto/choose_recipe select atomic
+d-i partman-partitioning/confirm_write_new_label boolean true
+d-i partman/choose_partition select finish
+d-i partman/confirm boolean true
+d-i partman/confirm_nooverwrite boolean true
+d-i partman-efi/non_efi_system boolean true
+d-i partman-partitioning/choose_label string gpt
+d-i partman-partitioning/default_label string gpt
+d-i partman-md/confirm boolean true
+d-i partman/mount_style select uuid
+
+### Base system installation
+d-i base-installer/install-recommends boolean false
+
+### Package selection
+tasksel tasksel/first multiselect ""
+d-i pkgsel/include string ca-certificates curl openssh-server python3 python3-apt {{ preseed_packages | default(None) }} {{ item.packages | default(None) }}
+d-i pkgsel/upgrade select full-upgrade
+popularity-contest popularity-contest/participate boolean false
+
+### Boot loader installation
+d-i grub-installer/only_debian boolean true
+d-i grub-installer/with_other_os boolean false
+d-i grub-installer/bootdev string /dev/sda
+
+### Finishing up the installation
+d-i finish-install/reboot_in_progress note
+d-i preseed/late_command string \
+in-target sed -i 's/^.*PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config; \
+in-target apt-get -y purge installation-report; \
+in-target apt-get -y purge laptop-detect; \
+in-target apt-get -y purge locales; \
+in-target apt-get -y purge manpages; \
+in-target apt-get -y purge nano; \
+in-target apt-get -y purge sudo; \
+in-target apt-get -y purge usbutils; \
+in-target apt-get -y purge vim-tiny; \
+in-target apt-get -y purge vim-common; \
+in-target apt-get -y autoremove; \
+in-target apt-get autoclean; \
+in-target apt-get clean

@@ -1,0 +1,16 @@
+---
+docker_backup_base_path: /opt/backup/docker
+docker_backup_backups_path: "{{ docker_backup_base_path }}/data"
+docker_backup_backups_databases_path: "{{ docker_backup_backups_path }}/databases"
+docker_backup_backups_files_path: "{{ docker_backup_backups_path }}/files"
+
+docker_backup_docker_path: /opt/dockerapp
+
+docker_backup_user: ""
+docker_backup_uid: ""
+docker_backup_group: "{{ docker_backup_user }}"
+docker_backup_gid: "{{ docker_backup_uid }}"
+
+docker_backup_retention_days: 7
+
+docker_backup_databases_postgres: []

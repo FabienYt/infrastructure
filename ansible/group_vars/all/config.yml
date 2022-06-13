@@ -1,0 +1,44 @@
+---
+# Ansible
+ansible_port: 22
+
+ansible_user: root
+ansible_password: "{{ user_ssh_password | default('') }}"
+ansible_become_password: "{{ ansible_password }}"
+
+ansible_python_interpreter: /usr/bin/python3
+ansible_ssh_private_key_file: ~/.ssh/id_servers
+ansible_scp_if_ssh: true
+
+# Backup
+backup_user_name: backupuser
+backup_user_uid: 4000
+backup_user_password: !vault |
+  $ANSIBLE_VAULT;1.1;AES256
+  39623831623662343232666235616366343132396139333835333236376231666161643035386266
+  6264626361383463326461356138303665663261323666340a353235656532323161323435363166
+  62393231336332653761303831363362373866663961663061346366643365376363613036336463
+  6534636331613535370a376564393963616330623030656266616663336166646166353531373131
+  36636666393464393132643366343733646633303839373830353665353763613464373131363964
+  35323531613662343838326161343338383766383863393661353132326537366131373962306438
+  306538393963663237643932383836366331
+
+# DNS
+dns_servers:
+  - "{{ hostvars['vm-esxi-network'].ansible_host }}"
+  - "{{ hostvars['network-server-replica'].ansible_host }}"
+
+# Hardening
+hardening_dns_servers: "{{ dns_servers }}"
+
+hardening_install_docker: false
+hardening_install_iptables: false
+
+hardening_backup_user: "{{ backup_user_name }}"
+hardening_backup_uid: "{{ backup_user_uid }}"
+hardening_backup_password: "{{ backup_user_password }}"
+
+# NTP
+ntp_manage_config: true
+ntp_timezone: Europe/Paris
+ntp_area: fr

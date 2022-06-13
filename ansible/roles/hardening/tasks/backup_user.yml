@@ -1,0 +1,24 @@
+---
+- name: Creates backup group
+  ansible.builtin.group:
+    name: "{{ hardening_backup_group }}"
+    gid: "{{ hardening_backup_gid }}"
+    state: present
+  when: hardening_backup_group|length > 0
+
+- name: Creates backup user
+  ansible.builtin.user:
+    name: "{{ hardening_backup_user }}"
+    uid: "{{ hardening_backup_uid }}"
+    group: "{{ hardening_backup_group }}"
+    password: "{{ hardening_backup_password | string | password_hash('sha512') }}"
+    create_home: true
+    update_password: on_create
+  when: hardening_backup_user|length > 0 and hardening_backup_password|length > 0
+
+- name: Deploy SSH public key for backup user
+  ansible.posix.authorized_key:
+    user: "{{ hardening_backup_user }}"
+    key: "{{ lookup('file', '~/.ssh/' + hardening_backup_key_file + '.pub') }}"
+    state: present
+  when: hardening_backup_user|length > 0

@@ -1,0 +1,15 @@
+---
+preseed_path_build: /tmp/preseed
+
+preseed_environment:
+  - {name: test}
+
+preseed_password: ChangeMe1!
+
+preseed_ntp_server: debian.pool.ntp.org
+preseed_timezone: UTC
+preseed_xkb_keymap: us
+
+preseed_network_netmask: 255.255.255.0
+preseed_network_gateway: 192.168.0.1
+preseed_network_nameservers: 80.67.169.12 80.67.169.40

@@ -1,0 +1,12 @@
+---
+preseed_environment:
+  - {name: vm-esxi-applications, password: "{{ vm_esxi_applications_root_password }}", packages: open-vm-tools}
+  - {name: vm-esxi-network, password: "{{ vm_esxi_network_root_password }}", packages: open-vm-tools}
+
+preseed_network_netmask: 255.255.255.0
+preseed_network_gateway: 192.168.42.1
+preseed_network_nameservers: "{{ dns_servers | join(' ') }}"
+
+preseed_ntp_server: fr.pool.ntp.org
+preseed_timezone: Europe/Paris
+preseed_xkb_keymap: fr(latin9)

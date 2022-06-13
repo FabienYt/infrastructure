@@ -1,0 +1,33 @@
+---
+- name: Ensure dedicated group docker exists
+  ansible.builtin.group:
+    name: "{{ docker_user_group }}"
+    gid: "{{ docker_user_gid }}"
+    state: present
+
+- name: Ensure dedicated user docker exists
+  ansible.builtin.user:
+    name: "{{ docker_user_name }}"
+    uid: "{{ docker_user_uid }}"
+    group: "{{ docker_user_group }}"
+    create_home: false
+
+- name: Install docker
+  ansible.builtin.include_role:
+    name: geerlingguy.docker
+
+- name: Setting pip_install_packages var
+  set_fact:
+    pip_install_packages:
+      - docker
+
+- name: Install docker lib (python3)
+  ansible.builtin.include_role:
+    name: geerlingguy.pip
+
+- name: Add cron task - Clean up docker containers
+  ansible.builtin.cron:
+    name: docker - clean up containers
+    user: "{{ docker_user_name }}"
+    special_time: daily
+    job: docker system prune -af --volumes

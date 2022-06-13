@@ -1,0 +1,6 @@
+---
+
+- name: Restore iptables rules
+  ansible.builtin.command: iptables-restore -n /etc/iptables.docker.rules
+  args:
+    removes: /etc/iptables.docker.rules

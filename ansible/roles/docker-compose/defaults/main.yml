@@ -1,0 +1,38 @@
+---
+docker_compose_base_path: /opt/dockerapp
+docker_compose_group_path: "{{ docker_compose_base_path }}/{{ docker_compose_containers_group }}"
+docker_compose_appdata_path: "{{ docker_compose_group_path }}/appdata"
+
+docker_compose_user: ""
+docker_compose_uid: ""
+docker_compose_group: "{{ docker_compose_user }}"
+docker_compose_gid: "{{ docker_compose_uid }}"
+
+docker_compose_version: "3.8"
+
+docker_compose_network_proxy_create: true
+docker_compose_network_proxy_name: _proxy
+docker_compose_networks: "{{ docker_compose_containers
+  | community.general.json_query('[*].networks')
+  | flatten
+  | unique
+  }}"
+
+docker_compose_volumes: "{{ [docker_compose_group_path] + docker_compose_volumes_containers }}"
+docker_compose_volumes_defined: []
+docker_compose_volumes_extract: "[*].volumes[?starts_with(@, '__appdata__')]"
+docker_compose_volumes_containers: "{{ docker_compose_containers
+  | community.general.json_query(docker_compose_volumes_extract)
+  | flatten
+  | select('match', '^[^.]*$')
+  | map('regex_replace', '^(.+?):(.+?)$', '\\1')
+  | map('regex_replace', '__appdata__', docker_compose_appdata_path)
+  | unique
+  }}"
+
+docker_compose_command: docker-compose
+docker_compose_update_command:
+  - "{{ docker_compose_command }} pull"
+  - "{{ docker_compose_command }} down --remove-orphans"
+  - "{{ docker_compose_command }} rm"
+  - "{{ docker_compose_command }} up -d"

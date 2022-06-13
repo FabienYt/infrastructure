@@ -1,0 +1,24 @@
+---
+- name: Regenerate GRUB configuration
+  ansible.builtin.command: update-grub2
+  args:
+    removes: /etc/default/grub
+
+- name: Reboot the machine
+  shell: sleep 5 && reboot
+  async: 1
+  poll: 0
+  listen: Reboot
+
+- name: Wait for the machine to come back online
+  wait_for_connection:
+    connect_timeout: 5
+    sleep: 5
+    delay: 30
+    timeout: 300
+  listen: Reboot
+
+- name: Restart fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: restarted

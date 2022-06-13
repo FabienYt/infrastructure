@@ -1,0 +1,18 @@
+---
+all:
+  children:
+    esxi:
+      hosts:
+        main-server:
+          ansible_host: 192.168.42.70
+    docker:
+      hosts:
+        vm-esxi-applications:
+          ansible_host: 192.168.42.251
+      children:
+        dns:
+          hosts:
+            vm-esxi-network:
+              ansible_host: 192.168.42.254
+            network-server-replica:
+              ansible_host: 192.168.42.253

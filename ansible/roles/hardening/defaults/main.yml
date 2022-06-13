@@ -1,0 +1,13 @@
+---
+hardening_install_docker: false
+
+hardening_dns_servers:
+  - 80.67.169.12
+  - 80.67.169.40
+
+hardening_backup_user: ""
+hardening_backup_uid: ""
+hardening_backup_group: "{{ hardening_backup_user }}"
+hardening_backup_gid: "{{ hardening_backup_uid }}"
+hardening_backup_password: ""
+hardening_backup_key_file: id_backup_servers

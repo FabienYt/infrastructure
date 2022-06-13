@@ -1,0 +1,3 @@
+---
+iptables_ports:
+  - {port: "22", protocol: tcp}
