@@ -28,7 +28,7 @@ This repo contains the code used to deploy and managing my various VM on VMware 
 
 `make ping`
 
-`make vault`
+`make vault` - Encrypts var with [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html)
 
 # Thanks
 
