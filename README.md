@@ -6,7 +6,7 @@ This repo contains the code used to deploy and managing my various VM on VMware 
 
 ## Deploy instructions
 
-`make check_update`
+`make check_update` - Checks if packages needs an update
 
 `make configure` - Sets up and secures the hosts
 
@@ -26,7 +26,7 @@ This repo contains the code used to deploy and managing my various VM on VMware 
 
 `make lint`
 
-`make ping`
+`make ping` - Pings the hosts
 
 `make vault` - Encrypts var with [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html)
 
