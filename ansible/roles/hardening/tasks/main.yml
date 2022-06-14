@@ -77,7 +77,7 @@
   when: hardening_install_iptables | bool
 
 - name: Force all notified handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Change Machine ID
   ansible.builtin.copy:
@@ -108,7 +108,7 @@
     autoremove: true
 
 - name: Force all notified handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Change boot parameters
   ansible.builtin.lineinfile:

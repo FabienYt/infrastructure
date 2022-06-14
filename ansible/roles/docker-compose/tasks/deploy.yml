@@ -1,6 +1,6 @@
 ---
 - name: Setting vars
-  set_fact:
+  ansible.builtin.set_fact:
     docker_compose_containers: "{{ item.containers | default([]) }}"
     docker_compose_containers_group: "{{ item.name }}"
     docker_compose_files: "{{ item.files | default([]) }}"
@@ -8,7 +8,7 @@
     docker_compose_volumes_defined: []
 
 - name: Setting vars
-  set_fact:
+  ansible.builtin.set_fact:
     docker_compose_volumes_defined: "{{ docker_compose_volumes_defined
       | combine({(volume.path | replace('__appdata__', docker_compose_appdata_path)): volume.chmod})
       }}"
@@ -68,4 +68,4 @@
   notify: Restart docker compose
 
 - name: Force all notified handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers

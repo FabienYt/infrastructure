@@ -40,10 +40,10 @@ if [ "$DOCKER_TASK" = "lint" ] ; then
   yamllint -sc /ansible/yamllint.yml /ansible/
 
   ansible-lint -p -c .ansible-lint playbooks/preseed.yml playbooks/run.yml
-  # ansible-playbook --syntax-check /ansible/playbooks/check_update.yml
+  ansible-playbook --syntax-check /ansible/playbooks/check_update.yml
   ansible-playbook --syntax-check /ansible/playbooks/preseed.yml
   ansible-playbook --syntax-check /ansible/playbooks/run.yml
-  # ansible-playbook --syntax-check /ansible/playbooks/update.yml
+  ansible-playbook --syntax-check /ansible/playbooks/update.yml
 fi
 
 if [ "$DOCKER_TASK" = "ping" ] ; then

@@ -17,7 +17,7 @@
     name: geerlingguy.docker
 
 - name: Setting pip_install_packages var
-  set_fact:
+  ansible.builtin.set_fact:
     pip_install_packages:
       - docker
 
