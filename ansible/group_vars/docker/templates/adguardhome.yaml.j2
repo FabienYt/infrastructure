@@ -84,6 +84,8 @@ dns:
     answer: {{ hostvars['vm-esxi-applications'].ansible_host }}
   - domain: recettes.{{ domain_name }}
     answer: {{ hostvars['vm-esxi-applications'].ansible_host }}
+  - domain: twitch-miner.{{ domain_name }}
+    answer: {{ hostvars['vm-esxi-applications'].ansible_host }}
   - domain: vaultwarden.{{ domain_name }}
     answer: {{ hostvars['vm-esxi-applications'].ansible_host }}
   blocked_services: []
@@ -120,7 +122,8 @@ whitelist_filters:
   name: {{ list | hash('blake2s') }}
   id: {{ loop.index }}
 {% endfor %}
-user_rules: []
+user_rules:
+- '@@||ttvnw.net^$important'
 dhcp:
   enabled: false
   interface_name: ""

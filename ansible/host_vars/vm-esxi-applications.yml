@@ -201,6 +201,24 @@ docker_compose_deploy:
           - traefik-socket-proxy
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock:ro
+  - name: twitch-miner
+    files:
+      - src: "/data/files/run.py"
+        dest: run.py
+    containers:
+      - service_name: twitch-miner
+        image: tkdalex/twitch-channel-points-miner-v2:latest
+        environment:
+          - TERM=xterm-256color
+        networks:
+          - twitch-miner
+        tty: true
+        user: "{{ docker_compose_uid }}:{{ docker_compose_gid }}"
+        volumes:
+          - __appdata__/analytics:/usr/src/app/analytics
+          - __appdata__/cookies:/usr/src/app/cookies
+          - __appdata__/logs:/usr/src/app/logs
+          - __appdata__/run.py:/usr/src/app/run.py:ro
   - name: vaultwarden
     # files:
     #   - src: "/data/files/vaultwarden-postgres.sql"

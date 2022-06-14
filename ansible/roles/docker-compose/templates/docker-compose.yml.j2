@@ -91,6 +91,9 @@ services:
     {% if container.sysctls is defined %}
     {{ format('sysctls', container.sysctls) }}
     {%- endif %}
+    {% if container.tty is defined %}
+    tty: {{ container.tty }}
+    {% endif %}
     {% if container.user is defined %}
     user: {{ container.user }}
     {% endif %}
