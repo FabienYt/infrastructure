@@ -2,28 +2,37 @@
 
 This repo contains the code used to deploy and managing my various VM on VMware ESXi. Ansible is the main way I deploy things.
 
-# Deploy instructions:
+# Usage
+
+## Deploy instructions:
 
 `make check_update`
 
-`make configure`
+`make configure` - Sets up and secures the hosts
 
 `make deploy`
 
-`make preseed`
+`make preseed` - Generates Debian iso with preseed file
 
-`make update`
+`make update` - Runs apt update and apt upgrade on the hosts
 
-`make update_vm_applications`
+`make update_vm_applications` - Runs apt update and apt upgrade on vm-esxi-applications
 
-`make update_vm_network`
+`make update_vm_network` - Runs apt update and apt upgrade on vm-esxi-network
 
-# Setup instructions:
+## Setup instructions:
 
-`make build`
+`make build` - Builds ansible_infrastructure image
 
 `make lint`
 
 `make ping`
 
 `make vault`
+
+# Thanks
+
+- https://github.com/ironicbadger/infra
+- https://github.com/RealOrangeOne/infrastructure
+- https://github.com/notthebee/infra
+- https://github.com/FuzzyMistborn/infra
