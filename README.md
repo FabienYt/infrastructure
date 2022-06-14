@@ -4,7 +4,7 @@ This repo contains the code used to deploy and managing my various VM on VMware 
 
 # Usage
 
-## Deploy instructions:
+## Deploy instructions
 
 `make check_update`
 
@@ -20,7 +20,7 @@ This repo contains the code used to deploy and managing my various VM on VMware 
 
 `make update_vm_network` - Runs apt update and apt upgrade on vm-esxi-network
 
-## Setup instructions:
+## Setup instructions
 
 `make build` - Builds ansible_infrastructure image
 
