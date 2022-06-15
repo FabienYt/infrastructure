@@ -12,6 +12,23 @@ healthchecks_io_uuid: !vault |
 
 # Docker
 docker_compose_deploy:
+  - name: epicgames
+    files:
+      - src: "/data/files/epicgames-freegames.json"
+        dest: config/config.json
+    containers:
+      - service_name: epicgames-freegames
+        image: ghcr.io/claabs/epicgames-freegames-node:bullseye-slim@sha256:fbb855a350cf63dc6f759af049c6ba67923f1246713e87b9eee9a1567c239ea2
+        environment:
+          - TZ={{ docker_timezone }}
+        labels_traefik:
+          name: epic
+          port: "3000"
+        networks:
+          - "{{ docker_compose_network_proxy_name }}"
+          - epicgames-freegames
+        volumes:
+          - __appdata__/config:/usr/app/config
   - name: ferdi
     containers:
       - service_name: ferdi

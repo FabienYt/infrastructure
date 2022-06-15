@@ -74,6 +74,8 @@ dns:
     answer: {{ hostvars['vm-esxi-network'].ansible_host }}
   - domain: adguard-replica.{{ domain_name }}
     answer: {{ hostvars['network-server-replica'].ansible_host }}
+  - domain: epic.{{ domain_name }}
+    answer: {{ hostvars['vm-esxi-applications'].ansible_host }}
   - domain: ferdi.{{ domain_name }}
     answer: {{ hostvars['vm-esxi-applications'].ansible_host }}
   - domain: ha.{{ domain_name }}
