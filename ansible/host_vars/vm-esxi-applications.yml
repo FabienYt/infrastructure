@@ -18,7 +18,7 @@ docker_compose_deploy:
         dest: config/config.json
     containers:
       - service_name: epicgames-freegames
-        image: ghcr.io/claabs/epicgames-freegames-node:bullseye-slim@sha256:fbb855a350cf63dc6f759af049c6ba67923f1246713e87b9eee9a1567c239ea2
+        image: ghcr.io/claabs/epicgames-freegames-node:47faa12e69dfb31af11c60fc3eacabf75c4901eb
         environment:
           - TZ={{ docker_timezone }}
         labels_traefik:
