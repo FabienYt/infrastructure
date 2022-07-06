@@ -5,7 +5,7 @@ now=$(date '+%Y%m%d%H%M%S')
 
 rsync -a --exclude '__*/' --chown={{ docker_backup_user }}:{{ docker_backup_group }} --no-compress {{ docker_backup_docker_path }}/ {{ docker_backup_backups_files_path }}/${now}/
 
-find {{ docker_backup_backups_files_path }}/* -maxdepth 0 -ctime +{{ docker_backup_retention_days }} -type d -delete
+find {{ docker_backup_backups_files_path }}/* -maxdepth 0 -ctime +{{ docker_backup_retention_days }} -type d -exec rm -rf {} \;
 
 {% if docker_backup_databases_postgres|length > 0 %}
 {% for database in docker_backup_databases_postgres %}
