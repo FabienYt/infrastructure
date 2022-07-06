@@ -1,6 +1,6 @@
 ---
 # AdGuard
-adguard_blocklists: "{{ (adguard_blocklists_personal + adguard_blocklists_firebog) | unique }}"
+adguard_blocklists: "{{ adguard_blocklists_personal }}"
 adguard_whitelists:
   - https://raw.githubusercontent.com/anudeepND/whitelist/master/domains/whitelist.txt
 
@@ -9,12 +9,6 @@ adguard_blocklists_personal:
   - https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
   - https://adaway.org/hosts.txt
   - https://sebsauvage.net/hosts/hosts
-  - https://block.energized.pro/basic/formats/hosts
-  - https://block.energized.pro/extensions/regional/formats/hosts
-  - https://hostfiles.frogeye.fr/firstparty-only-trackers-hosts.txt
-  - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
-  - https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt
-  - https://www.github.developerdan.com/hosts/lists/amp-hosts-extended.txt
 
 # Traefik
 traefik_dnsChallenge_resolvers:
