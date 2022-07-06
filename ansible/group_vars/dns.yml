@@ -4,7 +4,7 @@ adguard_blocklists: "{{ adguard_blocklists_personal }}"
 adguard_whitelists:
   - https://raw.githubusercontent.com/anudeepND/whitelist/master/domains/whitelist.txt
 
-adguard_blocklists_firebog: "{{ lookup('url', 'https://v.firebog.net/hosts/lists.php?type=nocross', wantlist=True) }}"
+adguard_blocklists_firebog: "{{ lookup('url', 'https://v.firebog.net/hosts/lists.php?type=tick', wantlist=True) }}"
 adguard_blocklists_personal:
   - https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
   - https://adaway.org/hosts.txt
