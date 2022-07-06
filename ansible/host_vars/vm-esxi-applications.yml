@@ -292,3 +292,5 @@ docker_compose_deploy:
 docker_backup_databases_postgres:
   - container_name: miniflux-postgres
   - container_name: vaultwarden-postgres
+
+docker_backup_retention_days: 1
