@@ -224,7 +224,7 @@ docker_compose_deploy:
         dest: run.py
     containers:
       - service_name: twitch-miner
-        image: tkdalex/twitch-channel-points-miner-v2:latest@sha256:ba6890cdf734f57d6240d8832b7272e6b905964ee7d70a482b33d2b856a32e2b
+        image: tkdalex/twitch-channel-points-miner-v2:latest@sha256:e7eb50c69c28f51f969dd0b24e136c153760ef69718095b03a042f8338729b78
         environment:
           - TERM=xterm-256color
         networks:
