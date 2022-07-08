@@ -184,7 +184,7 @@ docker_compose_deploy:
         dest: traefik.yml
     containers:
       - service_name: traefik
-        image: traefik:v2.7.1
+        image: traefik:v2.8.0
         healthcheck:
           test: traefik healthcheck --ping
         depends_on:
