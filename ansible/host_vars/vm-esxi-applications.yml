@@ -129,7 +129,7 @@ docker_compose_deploy:
         chmod: "0755"
     containers:
       - service_name: tandoor
-        image: vabene1111/recipes:1.2.7
+        image: vabene1111/recipes:1.3.0
         healthcheck:
           test: /bin/netstat -pant | /bin/grep 8080
         depends_on:
