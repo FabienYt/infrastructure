@@ -242,7 +242,7 @@ docker_compose_deploy:
     #     dest: vaultwarden-postgres.sql
     containers:
       - service_name: vaultwarden
-        image: vaultwarden/server:1.25.0
+        image: vaultwarden/server:1.25.2
         depends_on:
           - name: vaultwarden-postgres
             condition: service_healthy
