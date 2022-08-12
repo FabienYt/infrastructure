@@ -70,7 +70,7 @@ docker_compose_deploy:
           - __appdata__/data:/data
           - __appdata__/recipes:/app/recipes
       - service_name: ferdi-postgres
-        image: postgres:14.4-bullseye
+        image: postgres:14.5-bullseye
         environment:
           - POSTGRES_DB=ferdi
           - POSTGRES_USER=ferdi
@@ -110,7 +110,7 @@ docker_compose_deploy:
           - "{{ docker_compose_network_proxy_name }}"
           - miniflux
       - service_name: miniflux-postgres
-        image: postgres:14.4-bullseye
+        image: postgres:14.5-bullseye
         environment:
           - POSTGRES_DB=miniflux
           - POSTGRES_USER=miniflux
@@ -164,7 +164,7 @@ docker_compose_deploy:
           - __appdata__/mediafiles:/opt/recipes/mediafiles
           - __appdata__/staticfiles:/opt/recipes/staticfiles
       - service_name: tandoor-postgres
-        image: postgres:14.4-bullseye
+        image: postgres:14.5-bullseye
         environment:
           - POSTGRES_DB=tandoor
           - POSTGRES_USER=tandoor
@@ -275,7 +275,7 @@ docker_compose_deploy:
         volumes:
           - __appdata__/data:/data
       - service_name: vaultwarden-postgres
-        image: postgres:14.4-bullseye
+        image: postgres:14.5-bullseye
         environment:
           - POSTGRES_DB=vaultwarden
           - POSTGRES_USER=vaultwarden
