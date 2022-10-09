@@ -19,7 +19,7 @@ docker_compose_deploy:
         mode: "0644"
     containers:
       - service_name: adguard
-        image: adguard/adguardhome:v0.107.7
+        image: adguard/adguardhome:v0.107.16
         healthcheck:
           test: /bin/netstat -pant | /bin/grep 53
         labels_traefik:
