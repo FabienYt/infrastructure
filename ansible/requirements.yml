@@ -5,7 +5,7 @@ collections:
   - name: community.general
     version: 5.7.0
   - name: devsec.hardening
-    version: 8.2.0
+    version: 8.8.0
 
 roles:
   - name: geerlingguy.docker
