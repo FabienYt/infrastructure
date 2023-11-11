@@ -3,7 +3,7 @@ collections:
   - name: ansible.posix
     version: 1.4.0
   - name: community.general
-    version: 5.7.0
+    version: 7.4.0
   - name: devsec.hardening
     version: 8.2.0
 
