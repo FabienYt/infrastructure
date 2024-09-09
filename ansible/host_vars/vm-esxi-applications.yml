@@ -208,7 +208,7 @@ docker_compose_deploy:
           - __appdata__/dynamic_configuration.yml:/etc/traefik/config/dynamic_configuration.yml:ro
           - __appdata__/traefik.yml:/etc/traefik/traefik.yml:ro
       - service_name: traefik-docker-socket-proxy
-        image: ghcr.io/tecnativa/docker-socket-proxy:0.1.1
+        image: ghcr.io/tecnativa/docker-socket-proxy:0.3.0
         healthcheck:
           test: /bin/netstat -pant | /bin/grep 2375
         environment:
